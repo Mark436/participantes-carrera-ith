@@ -1,34 +1,40 @@
-# Participantes · Carrera ITH
+Participantes · Carrera ITH
+¿Qué es este proyecto?
+Es un sitio web para consultar y buscar participantes de la Carrera ITH. Permite encontrar registros mediante un buscador con autocompletado y visualizar la información de cada participante en una tabla.
 
-Buscador de participantes con autocompletado, ficha del registro y tabla completa.
-Todo vive en un solo `index.html` (HTML + CSS + JS + datos), sin dependencias ni build.
+El proyecto está desarrollado en un solo archivo index.html, que contiene el HTML, CSS, JavaScript y los datos. No utiliza bases de datos externas ni dependencias.
 
-## Uso local
+¿Cómo se guardan los datos?
+Todos los registros se almacenan directamente en el archivo index.html, dentro de un arreglo de JavaScript llamado participantes.
 
-Abre `index.html` en el navegador. No necesita servidor.
+Cada participante se guarda como un objeto con la siguiente estructura:
 
-## Despliegue en Netlify
 
-1. En Netlify: **Add new site → Import an existing project → GitHub** y elige este repo.
-2. Deja los valores que toma de `netlify.toml`: sin comando de build, directorio de publicación `.`.
-3. **Deploy**. Cada push a `main` vuelve a desplegar solo.
+json
+{
+  "id": 1,
+  "fecha": "2026-10-21T18:22:40",
+  "nombre": "Nombre Apellido",
+  "rama": "VARONIL",
+  "talla": "XL",
+  "categoria": "SUPER MASTER (60 Y MAS)",
+  "nota": ""
+}
+Los datos no se guardan en una base de datos ni se actualizan automáticamente. Para conservar cualquier cambio, es necesario modificar el archivo y guardar los cambios en el repositorio.
 
-## Actualizar los registros
+¿Cómo agregar un participante nuevo?
+Abre el archivo index.html.
+Busca el arreglo const participantes = [...].
+Agrega un nuevo objeto al final de la lista, separado por una coma.
+Asigna un id único y completa la información del participante.
+Guarda los cambios y actualiza el repositorio.
+Campos disponibles:
 
-Los datos están en `index.html`, en la línea `const participantes = [...]`.
-Cada registro tiene esta forma:
-
-```json
-{"id":1,"fecha":"2026-10-21T18:22:40","nombre":"Nombre Apellido","rama":"VARONIL","talla":"XL","categoria":"SUPER MASTER (60 Y MAS)","nota":""}
-```
-
-- `rama`: `VARONIL` o `FEMENIL`
-- `talla`: `CH`, `M`, `L` o `XL`
-- `nota`: texto libre del formulario (comentarios, teléfono, etc.)
-
-## Privacidad
-
-La lista incluye nombres y algunos teléfonos. El sitio manda `X-Robots-Tag: noindex` y
-`robots.txt` bloquea a los buscadores, pero cualquiera con el enlace puede verlo.
-Si quieres restringirlo, activa **Password protection** en Netlify
-(Site configuration → Access & security) o mantén el repo privado.
+id: identificador único del registro.
+fecha: fecha y hora del registro.
+nombre: nombre completo del participante.
+rama: VARONIL o FEMENIL.
+talla: CH, M, L o XL.
+categoria: categoría correspondiente.
+nota: información adicional o comentarios.
+Una vez actualizado el repositorio, Netlify realizará automáticamente un nuevo despliegue del sitio.
