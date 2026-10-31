@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Participantes · Carrera ITH</title>
+<style>
+  :root {
+    --fondo: #f5f4f0;
+    --superficie: #ffffff;
+    --texto: #1d1d1f;
+    --suave: #6e6e73;
+    --borde: #e6e4de;
+    --acento: #2f6b5a;
+    --acento-suave: #e3efe9;
+    --varonil: #e4ecfa;
+    --varonil-texto: #2c4f8f;
+    --femenil: #fae6ee;
+    --femenil-texto: #9a3460;
+    --aviso: #fff4dc;
+    --aviso-texto: #8a5a00;
+    --radio: 22px;
+    --radio-chico: 14px;
+    --sombra: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Squircle donde el navegador lo soporte; border-radius normal como respaldo */
+  .squircle {
+    border-radius: var(--radio);
+    corner-shape: squircle;
+  }
+  @supports (corner-shape: squircle) {
+    .squircle { border-radius: calc(var(--radio) * 1.8); }
+  }
+
+  .contenedor {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  header { margin-bottom: 28px; }
+  header h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -.02em; }
+  header p { margin: 0; color: var(--suave); font-size: .95rem; }
+
+  /* ---------- Ficha del participante ---------- */
+  .ficha {
+    background: var(--superficie);
+    box-shadow: var(--sombra);
+    padding: 26px;
+    margin-bottom: 18px;
+    animation: aparecer .25s ease;
+  }
+  .ficha.vacia {
+    text-align: center;
+    color: var(--suave);
+    padding: 34px 26px;
+    box-shadow: none;
+    background: transparent;
+    border: 1.5px dashed var(--borde);
+  }
+  .ficha-encabezado {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .ficha h2 { margin: 0; font-size: 1.45rem; letter-spacing: -.015em; }
+  .folio {
+    flex-shrink: 0;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--acento);
+    background: var(--acento-suave);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .datos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .dato {
+    background: var(--fondo);
+    padding: 12px 14px;
+    border-radius: var(--radio-chico);
+    corner-shape: squircle;
+  }
+  .dato > span {
+    display: block;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--suave);
+    margin-bottom: 2px;
+  }
+  .dato strong { font-weight: 600; font-size: .98rem; }
+  .dato.ancho { grid-column: 1 / -1; }
+
+  .aviso {
+    margin-top: 14px;
+    background: var(--aviso);
+    color: var(--aviso-texto);
+    padding: 12px 14px;
+    border-radius: var(--radio-chico);
+    corner-shape: squircle;
+    font-size: .9rem;
+  }
+  .aviso button {
+    margin: 6px 6px 0 0;
+    border: 0;
+    background: rgba(255,255,255,.7);
+    color: inherit;
+    font: inherit;
+    font-size: .82rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .aviso button.actual { background: var(--aviso-texto); color: #fff; }
+
+  .pastilla {
+    display: inline-block;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .pastilla.varonil { background: var(--varonil); color: var(--varonil-texto); }
+  .pastilla.femenil { background: var(--femenil); color: var(--femenil-texto); }
+
+  /* ---------- Buscador ---------- */
+  .buscador { position: relative; }
+  .campo { position: relative; }
+  .buscador input {
+    width: 100%;
+    font: inherit;
+    font-size: 1.05rem;
+    padding: 18px 22px 18px 52px;
+    border: 1.5px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .buscador input:focus {
+    border-color: var(--acento);
+    box-shadow: 0 0 0 4px var(--acento-suave);
+  }
+  .buscador svg {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--suave);
+    pointer-events: none;
+  }
+
+  .sugerencias {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 6px;
+    background: var(--superficie);
+    box-shadow: var(--sombra);
+    border: 1px solid var(--borde);
+  }
+  .sugerencias[hidden] { display: none; }
+  .sugerencias li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: var(--radio-chico);
+    corner-shape: squircle;
+    cursor: pointer;
+  }
+  .sugerencias li.activa,
+  .sugerencias li:hover { background: var(--fondo); }
+  .sugerencias mark {
+    background: none;
+    color: var(--acento);
+    font-weight: 700;
+  }
+  .sugerencias small { color: var(--suave); font-size: .8rem; text-align: right; }
+  .sugerencias .sin-resultados { color: var(--suave); cursor: default; }
+  .sugerencias .sin-resultados:hover { background: none; }
+
+  /* ---------- Botón y tabla ---------- */
+  .boton-tabla {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 600;
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--texto);
+    color: #fff;
+    cursor: pointer;
+    transition: transform .1s, opacity .15s;
+  }
+  .boton-tabla:hover { opacity: .88; }
+  .boton-tabla:active { transform: scale(.98); }
+  .boton-tabla svg { transition: transform .2s; }
+  .boton-tabla[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+  .tabla-envoltura {
+    margin-top: 16px;
+    background: var(--superficie);
+    box-shadow: var(--sombra);
+    overflow: auto;
+    max-height: 70vh;
+    animation: aparecer .25s ease;
+  }
+  .tabla-envoltura[hidden] { display: none; }
+
+  /* En desktop la tabla toma el ancho de su contenido y se centra,
+     aunque sea más ancha que el contenedor de 760px */
+  @media (min-width: 601px) {
+    .tabla-envoltura {
+      width: fit-content;
+      min-width: 100%;
+      max-width: calc(100vw - 56px);
+      position: relative;
+      left: 50%;
+      translate: -50% 0;
+    }
+  }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 12px 14px; white-space: nowrap; }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--superficie);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--suave);
+    border-bottom: 1px solid var(--borde);
+    z-index: 1;
+  }
+  tbody tr { cursor: pointer; transition: background .12s; }
+  tbody tr:hover { background: var(--fondo); }
+  tbody tr.seleccionada { background: var(--acento-suave); }
+  tbody tr + tr td { border-top: 1px solid #f0eee9; }
+  td.num { color: var(--suave); font-variant-numeric: tabular-nums; }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---------- Móvil ---------- */
+  html { -webkit-text-size-adjust: 100%; }
+  button, li, tr { -webkit-tap-highlight-color: transparent; }
+
+  @media (max-width: 600px) {
+    :root { --radio: 18px; --radio-chico: 12px; }
+
+    .contenedor {
+      padding: 24px 14px calc(48px + env(safe-area-inset-bottom));
+    }
+    header { margin-bottom: 18px; }
+    header h1 { font-size: 1.35rem; }
+    header p { font-size: .85rem; }
+
+    /* Ficha */
+    .ficha { padding: 18px; }
+    .ficha.vacia { padding: 26px 18px; font-size: .92rem; }
+    .ficha h2 { font-size: 1.2rem; line-height: 1.25; }
+    .ficha-encabezado { margin-bottom: 14px; }
+    .datos { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .dato { padding: 10px 12px; }
+    .dato strong { font-size: .92rem; }
+    .dato.categoria, .dato.fecha { grid-column: 1 / -1; }
+    .aviso { font-size: .85rem; }
+    .aviso button { font-size: .78rem; }
+
+    /* Buscador: 16px mínimo para que iOS no haga zoom */
+    .buscador input { font-size: 16px; padding: 15px 18px 15px 46px; }
+    .buscador svg { left: 17px; }
+    .sugerencias { max-height: 55vh; overflow-y: auto; }
+    .sugerencias li {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      padding: 10px 12px;
+    }
+    .sugerencias small { text-align: left; font-size: .76rem; }
+
+    .boton-tabla { width: 100%; justify-content: center; padding: 14px 20px; }
+
+    /* Tabla → lista de tarjetas */
+    .tabla-envoltura { max-height: none; overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    thead { display: none; }
+    tbody tr {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      grid-template-areas:
+        "id nombre rama"
+        ".  detalle fecha";
+      column-gap: 8px;
+      row-gap: 4px;
+      align-items: center;
+      padding: 12px 14px;
+    }
+    tbody tr + tr { border-top: 1px solid #f0eee9; }
+    tbody tr + tr td { border-top: 0; }
+    td { padding: 0; white-space: normal; }
+    td.col-id { grid-area: id; font-size: .8rem; }
+    td.col-nombre { grid-area: nombre; font-weight: 600; font-size: .93rem; }
+    td.col-rama { grid-area: rama; }
+    td.col-talla { display: none; }
+    td.col-categoria { grid-area: detalle; font-size: .8rem; color: var(--suave); }
+    td.col-categoria::before { content: "Talla " attr(data-talla) " · "; color: var(--texto); font-weight: 500; }
+    td.col-fecha { grid-area: fecha; font-size: .78rem; text-align: right; }
+  }
+
+  @media (max-width: 360px) {
+    .datos { grid-template-columns: 1fr; }
+    .folio { padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+<main class="contenedor">
+  <header>
+    <h1>Participantes</h1>
+    <p id="resumen"></p>
+  </header>
+
+  <section id="ficha" class="ficha vacia squircle" aria-live="polite">
+    Escribe un nombre para ver el registro completo.
+  </section>
+
+  <div class="buscador">
+    <div class="campo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="entrada" class="squircle" type="text" placeholder="Buscar por nombre…" autocomplete="off" spellcheck="false"
+           role="combobox" aria-expanded="false" aria-controls="sugerencias" aria-autocomplete="list">
+    </div>
+    <ul id="sugerencias" class="sugerencias squircle" role="listbox" hidden></ul>
+  </div>
+
+  <button id="botonTabla" class="boton-tabla" aria-expanded="false" aria-controls="tablaEnvoltura">
+    <span>Ver todos los registrados</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+
+  <div id="tablaEnvoltura" class="tabla-envoltura squircle" hidden>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Nombre</th><th>Rama</th><th>Talla</th><th>Categoría</th><th>Registro</th></tr>
+      </thead>
+      <tbody id="cuerpoTabla"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+const participantes = [{"id":1,"fecha":"2026-10-21T18:22:40","nombre":"Ulises Rivera Landaverde","rama":"VARONIL","talla":"XL","categoria":"SUPER MASTER (60 Y MAS)","nota":""},{"id":2,"fecha":"2026-10-21T18:23:09","nombre":"Santiago Rivera","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":3,"fecha":"2026-10-21T19:06:32","nombre":"Judas Hitler Silva Fragoso","rama":"VARONIL","talla":"L","categoria":"SUPER MASTER (60 Y MAS)","nota":""},{"id":4,"fecha":"2026-10-21T20:47:55","nombre":"Javier Aldana","rama":"VARONIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":5,"fecha":"2026-10-21T21:59:40","nombre":"Anngel Luis Padilla Cordova","rama":"VARONIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"6451154366"},{"id":6,"fecha":"2026-10-22T06:17:14","nombre":"Julián Aguilar Moreno","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":7,"fecha":"2026-10-22T08:45:45","nombre":"Nayheli Alvirez","rama":"FEMENIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"De acuerdo"},{"id":8,"fecha":"2026-10-22T09:41:50","nombre":"Felipe de Jesús Rivera González","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":9,"fecha":"2026-10-22T09:47:01","nombre":"Ulises Villalba","rama":"VARONIL","talla":"M","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":10,"fecha":"2026-10-22T10:53:34","nombre":"Caridad Matus","rama":"FEMENIL","talla":"M","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":11,"fecha":"2026-10-22T10:57:44","nombre":"Luis Guillermo Cardenas","rama":"VARONIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":12,"fecha":"2026-10-22T11:41:08","nombre":"luis","rama":"VARONIL","talla":"XL","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok"},{"id":13,"fecha":"2026-10-22T11:41:24","nombre":"Maria fernanda mendoza","rama":"VARONIL","talla":"XL","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok"},{"id":14,"fecha":"2026-10-22T12:09:00","nombre":"Francisco Bercovich Valdez","rama":"VARONIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":15,"fecha":"2026-10-22T12:16:06","nombre":"Sergio Simon","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"Ok"},{"id":16,"fecha":"2026-10-22T12:26:45","nombre":"Elena Valenzuela Elizalde","rama":"FEMENIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":17,"fecha":"2026-10-22T13:29:29","nombre":"Angel Avendaño Gomez","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":"OK"},{"id":18,"fecha":"2026-10-22T13:36:39","nombre":"ian Alexander Castillo Rocabado","rama":"VARONIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":19,"fecha":"2026-10-22T14:44:24","nombre":"Loyda zamudio","rama":"FEMENIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":20,"fecha":"2026-10-22T14:47:42","nombre":"Julio morales viscaya","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"Enterado"},{"id":21,"fecha":"2026-10-22T14:48:19","nombre":"Mercedes castro verdugo","rama":"FEMENIL","talla":"M","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"Enterada"},{"id":22,"fecha":"2026-10-22T14:48:27","nombre":"Bertha Alicia García Hernández","rama":"FEMENIL","talla":"XL","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":23,"fecha":"2026-10-22T14:48:57","nombre":"Leonila Contreras Vázquez","rama":"FEMENIL","talla":"M","categoria":"MASTER (47 A 59 AÑOS)","nota":"15"},{"id":24,"fecha":"2026-10-22T14:51:47","nombre":"Martin Arturo Gomez Delgado","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":25,"fecha":"2026-10-22T15:25:06","nombre":"JOSE DE JESUS EDUARDO MEDINA GUTIERREZ","rama":"VARONIL","talla":"XL","categoria":"SUPER MASTER (60 Y MAS)","nota":"ENTERADO Y DE CUERDO"},{"id":26,"fecha":"2026-10-22T16:41:03","nombre":"Luz del Carmen Enríquez Rodríguez","rama":"FEMENIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":27,"fecha":"2026-10-22T16:41:08","nombre":"Bettina Elisa Santa Cruz Welsh","rama":"FEMENIL","talla":"M","categoria":"SUPER MASTER (60 Y MAS)","nota":""},{"id":28,"fecha":"2026-10-22T16:41:38","nombre":"Edith Montoya Enriquez","rama":"FEMENIL","talla":"XL","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":29,"fecha":"2026-10-22T16:44:23","nombre":"Rosario Pulido Burboa","rama":"FEMENIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":30,"fecha":"2026-10-22T16:45:48","nombre":"Bettina Elisa Santa Cruz Welsh","rama":"FEMENIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":31,"fecha":"2026-10-22T17:47:40","nombre":"Diego Camargo Moreno","rama":"VARONIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":32,"fecha":"2026-10-22T20:06:24","nombre":"Celeste","rama":"FEMENIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":33,"fecha":"2026-10-22T20:15:46","nombre":"Santos Eduardo Avechuco González","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":34,"fecha":"2026-10-22T20:48:43","nombre":"Jesús Martín Valdez Duarte","rama":"VARONIL","talla":"M","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":35,"fecha":"2026-10-23T12:50:42","nombre":"José Carlos Soto Mendivil","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"6621460783"},{"id":36,"fecha":"2026-10-23T12:51:26","nombre":"Angelica Sabina Salado Esquer","rama":"FEMENIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"6621055880"},{"id":37,"fecha":"2026-10-23T18:00:02","nombre":"Gael Garcia Arvizu","rama":"VARONIL","talla":"L","categoria":"ALUMNOS/PERSONAL ITH","nota":"6331316108, 24330463"},{"id":38,"fecha":"2026-10-23T18:03:35","nombre":"Amairani Yamileth Zavala Montoya","rama":"FEMENIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":39,"fecha":"2026-10-24T20:34:17","nombre":"Demetrio Soots Puebla","rama":"VARONIL","talla":"XL","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok. 6621312659 ."},{"id":40,"fecha":"2026-10-24T20:35:19","nombre":"Constanza Reyes Pulido","rama":"FEMENIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":41,"fecha":"2026-10-25T09:36:30","nombre":"Jesus Antonio Montes Franco","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":42,"fecha":"2026-10-25T12:22:41","nombre":"Silvia Felix","rama":"FEMENIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":43,"fecha":"2026-10-25T14:40:03","nombre":"Dariana Fierro","rama":"FEMENIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok"},{"id":44,"fecha":"2026-10-25T14:40:23","nombre":"Marcos Cañez","rama":"VARONIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok"},{"id":45,"fecha":"2026-10-25T14:42:02","nombre":"Adán Córdova","rama":"VARONIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":"Ok"},{"id":46,"fecha":"2026-10-25T21:15:03","nombre":"Sebastian valenzuela sanchez","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":"Ok"},{"id":47,"fecha":"2026-10-25T23:45:46","nombre":"Abdul","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":48,"fecha":"2026-10-25T23:46:16","nombre":"Abdul","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":49,"fecha":"2026-10-26T07:00:18","nombre":"DEMETRIO CRUZ OSORIO","rama":"VARONIL","talla":"M","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":50,"fecha":"2026-10-26T10:01:16","nombre":"Angel Sahid Iriqui Tapia","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":51,"fecha":"2026-10-26T10:01:48","nombre":"Angel Sahid Iriqui Tapia","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":52,"fecha":"2026-10-26T10:20:59","nombre":"Jesus Angel Badilla Rios","rama":"VARONIL","talla":"L","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":53,"fecha":"2026-10-26T10:53:05","nombre":"Herman Josue Coronado Saucedo","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":"La recogería el miércoles 28, 6624607347"},{"id":54,"fecha":"2026-10-26T16:09:41","nombre":"Jessica","rama":"FEMENIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":55,"fecha":"2026-10-26T16:11:42","nombre":"Osbaldo","rama":"VARONIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":56,"fecha":"2026-10-26T17:22:45","nombre":"Claudia Sofía García Segura","rama":"FEMENIL","talla":"L","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":57,"fecha":"2026-10-26T17:23:33","nombre":"Jorge Hugo Denney Noris","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":58,"fecha":"2026-10-26T17:23:52","nombre":"Edgar cheu","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":59,"fecha":"2026-10-26T17:25:17","nombre":"José Luis Martinez Montaño","rama":"VARONIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":60,"fecha":"2026-10-26T18:47:38","nombre":"Arcelia Márquez Castillo","rama":"FEMENIL","talla":"M","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":61,"fecha":"2026-10-27T08:41:39","nombre":"Jose Salvador Navarro Navarro","rama":"VARONIL","talla":"XL","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":62,"fecha":"2026-10-27T08:42:10","nombre":"Luis Alejandro Santillan Anaya","rama":"VARONIL","talla":"XL","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":63,"fecha":"2026-10-27T10:00:02","nombre":"Ximena Alcantar Benitez","rama":"FEMENIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":64,"fecha":"2026-10-27T10:24:39","nombre":"Fernanda Ruiz Arellanes","rama":"FEMENIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":65,"fecha":"2026-10-27T10:25:15","nombre":"diego alejandro garcía guzmán","rama":"VARONIL","talla":"XL","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":66,"fecha":"2026-10-27T10:29:30","nombre":"Rene Alonzo Mexia Urias","rama":"VARONIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":67,"fecha":"2026-10-27T11:26:38","nombre":"Dorissa Guadalupe Verdugo Yocupicio","rama":"FEMENIL","talla":"M","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Ok, gracias"},{"id":68,"fecha":"2026-10-27T12:06:01","nombre":"Alan Hugues","rama":"VARONIL","talla":"M","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":69,"fecha":"2026-10-27T12:28:01","nombre":"Roman Alberto Zayas Castillo","rama":"VARONIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":70,"fecha":"2026-10-27T14:16:45","nombre":"Eduardo Alvarado Ramírez","rama":"VARONIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":71,"fecha":"2026-10-27T14:19:02","nombre":"Jose Manuel Alvarado Rodriguez","rama":"VARONIL","talla":"XL","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":72,"fecha":"2026-10-27T15:08:09","nombre":"Josafath","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":73,"fecha":"2026-10-28T09:31:28","nombre":"Cecilia serratos borquez","rama":"FEMENIL","talla":"CH","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":74,"fecha":"2026-10-28T09:38:23","nombre":"Angela Mailee Valenzuela","rama":"FEMENIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Enterada"},{"id":75,"fecha":"2026-10-28T09:43:31","nombre":"Cecilia serratos","rama":"FEMENIL","talla":"CH","categoria":"MASTER (47 A 59 AÑOS)","nota":""},{"id":76,"fecha":"2026-10-28T10:02:16","nombre":"Araceli Elizabet Soto Gamboa","rama":"FEMENIL","talla":"XL","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":77,"fecha":"2026-10-28T10:31:32","nombre":"Mirna Patricia Hernández Gastelum","rama":"FEMENIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":78,"fecha":"2026-10-28T10:45:51","nombre":"Salvador Hazai Padilla Hernández","rama":"VARONIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Gracias"},{"id":79,"fecha":"2026-10-28T11:32:30","nombre":"Eduardo Aaron Verdugo Neudert","rama":"VARONIL","talla":"XL","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":80,"fecha":"2026-10-28T12:23:06","nombre":"Manuel Ricardo Figueroa de la Torre","rama":"VARONIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":81,"fecha":"2026-10-28T13:44:19","nombre":"Flavio Cesar Sanchez Quintero","rama":"VARONIL","talla":"CH","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":82,"fecha":"2026-10-28T14:04:51","nombre":"Ortencia García Vallejo","rama":"FEMENIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":83,"fecha":"2026-10-28T14:07:55","nombre":"Ortencia García Vallejo","rama":"FEMENIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":"Entendido"},{"id":84,"fecha":"2026-10-28T14:10:52","nombre":"Josefina González Téllez","rama":"FEMENIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":"Si"},{"id":85,"fecha":"2026-10-28T14:13:32","nombre":"Josefina Téllez González","rama":"FEMENIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":86,"fecha":"2026-10-28T14:22:08","nombre":"Manuel Fernando Palafox Vizcarra","rama":"VARONIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":87,"fecha":"2026-10-28T14:26:30","nombre":"Michelle Flores Blumenkron","rama":"FEMENIL","talla":"L","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":88,"fecha":"2026-10-29T08:59:29","nombre":"Luis Alejandro Candia Galvan","rama":"VARONIL","talla":"CH","categoria":"VETERANOS (36 A 46 AÑOS)","nota":""},{"id":89,"fecha":"2026-10-29T09:00:03","nombre":"Emmanuel Alejandro Candia Yautmea","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":90,"fecha":"2026-10-29T10:13:58","nombre":"Guillermo Valencia Palono","rama":"VARONIL","talla":"L","categoria":"ALUMNOS/PERSONAL ITH","nota":""},{"id":91,"fecha":"2026-10-29T10:14:42","nombre":"Daniel Valencia Torres","rama":"VARONIL","talla":"CH","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":92,"fecha":"2026-10-29T10:15:30","nombre":"Lucia Valencia Torres","rama":"FEMENIL","talla":"L","categoria":"LIBRE (18 HASTA 35 AÑOS)","nota":""},{"id":93,"fecha":"2026-10-29T12:07:06","nombre":"Esteban granillo sierra","rama":"VARONIL","talla":"XL","categoria":"ALUMNOS/PERSONAL ITH","nota":""}];
+
+const MAX_SUGERENCIAS = 8;
+const PALABRAS_MENORES = new Set(['de', 'del', 'la', 'las', 'los', 'y']);
+
+const normalizar = (texto) =>
+  texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+const escaparHtml = (texto) =>
+  texto.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const formatearNombre = (nombre) =>
+  nombre.toLowerCase().split(' ').map((palabra, i) => {
+    if (i > 0 && PALABRAS_MENORES.has(palabra)) return palabra;
+    return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+  }).join(' ');
+
+const formatearCategoria = (categoria) => {
+  const texto = categoria.toLowerCase().replace('ith', 'ITH').replace(/ y mas/, ' y más');
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+};
+
+const formatearFecha = (iso, conHora = true) => {
+  const fecha = new Date(iso);
+  const opciones = { day: 'numeric', month: 'short' };
+  if (conHora) Object.assign(opciones, { hour: '2-digit', minute: '2-digit' });
+  return fecha.toLocaleString('es-MX', opciones);
+};
+
+const pastillaRama = (rama) => {
+  const clase = rama === 'FEMENIL' ? 'femenil' : 'varonil';
+  return `<span class="pastilla ${clase}">${rama === 'FEMENIL' ? 'Femenil' : 'Varonil'}</span>`;
+};
+
+// Precalcular datos de búsqueda una sola vez
+participantes.forEach((p) => {
+  p.nombreVisible = formatearNombre(p.nombre);
+  p.clave = normalizar(p.nombre);
+  p.palabras = p.clave.split(/\s+/);
+});
+
+const registrosPorClave = participantes.reduce((mapa, p) => {
+  if (!mapa.has(p.clave)) mapa.set(p.clave, []);
+  mapa.get(p.clave).push(p);
+  return mapa;
+}, new Map());
+
+// ---------- Elementos ----------
+const entrada = document.getElementById('entrada');
+const listaSugerencias = document.getElementById('sugerencias');
+const ficha = document.getElementById('ficha');
+const botonTabla = document.getElementById('botonTabla');
+const tablaEnvoltura = document.getElementById('tablaEnvoltura');
+const cuerpoTabla = document.getElementById('cuerpoTabla');
+
+let resultadosActuales = [];
+let indiceActivo = -1;
+let seleccionadoId = null;
+
+// ---------- Búsqueda ----------
+const buscar = (consulta) => {
+  const fragmentos = normalizar(consulta).split(/\s+/).filter(Boolean);
+  if (fragmentos.length === 0) return [];
+
+  const coincide = (p) => fragmentos.every((f) => p.palabras.some((w) => w.startsWith(f)));
+  const empiezaConPrimero = (p) => p.palabras[0].startsWith(fragmentos[0]);
+
+  return participantes
+    .filter(coincide)
+    .sort((a, b) => {
+      const prioridad = empiezaConPrimero(b) - empiezaConPrimero(a);
+      if (prioridad !== 0) return prioridad;
+      return a.clave.localeCompare(b.clave);
+    })
+    .slice(0, MAX_SUGERENCIAS);
+};
+
+const resaltar = (p, consulta) => {
+  const fragmentos = normalizar(consulta).split(/\s+/).filter(Boolean);
+  return p.nombreVisible.split(' ').map((palabra) => {
+    const palabraNormal = normalizar(palabra);
+    const largo = Math.max(0, ...fragmentos.filter((f) => palabraNormal.startsWith(f)).map((f) => f.length));
+    if (largo === 0) return escaparHtml(palabra);
+    return `<mark>${escaparHtml(palabra.slice(0, largo))}</mark>${escaparHtml(palabra.slice(largo))}`;
+  }).join(' ');
+};
+
+const cerrarSugerencias = () => {
+  listaSugerencias.hidden = true;
+  entrada.setAttribute('aria-expanded', 'false');
+  indiceActivo = -1;
+};
+
+const pintarSugerencias = () => {
+  const consulta = entrada.value;
+  resultadosActuales = buscar(consulta);
+  indiceActivo = resultadosActuales.length > 0 ? 0 : -1;
+
+  if (!consulta.trim()) return cerrarSugerencias();
+
+  if (resultadosActuales.length === 0) {
+    listaSugerencias.innerHTML = '<li class="sin-resultados">Sin coincidencias</li>';
+  } else {
+    listaSugerencias.innerHTML = resultadosActuales.map((p, i) => `
+      <li role="option" data-indice="${i}" class="${i === indiceActivo ? 'activa' : ''}">
+        <span>${resaltar(p, consulta)}</span>
+        <small>${formatearCategoria(p.categoria)}</small>
+      </li>`).join('');
+  }
+
+  listaSugerencias.hidden = false;
+  entrada.setAttribute('aria-expanded', 'true');
+};
+
+const moverActiva = (paso) => {
+  if (resultadosActuales.length === 0) return;
+  indiceActivo = (indiceActivo + paso + resultadosActuales.length) % resultadosActuales.length;
+  [...listaSugerencias.children].forEach((li, i) => li.classList.toggle('activa', i === indiceActivo));
+  listaSugerencias.children[indiceActivo]?.scrollIntoView({ block: 'nearest' });
+};
+
+// ---------- Ficha ----------
+const mostrarParticipante = (p) => {
+  seleccionadoId = p.id;
+  const duplicados = registrosPorClave.get(p.clave);
+
+  const avisoDuplicado = duplicados.length > 1 ? `
+    <div class="aviso">
+      Este nombre aparece <strong>${duplicados.length} veces</strong> en el registro.<br>
+      ${duplicados.map((d) => `<button data-id="${d.id}" class="${d.id === p.id ? 'actual' : ''}">#${d.id} · ${formatearCategoria(d.categoria)} · ${d.talla}</button>`).join('')}
+    </div>` : '';
+
+  ficha.className = 'ficha squircle';
+  ficha.innerHTML = `
+    <div class="ficha-encabezado">
+      <h2>${escaparHtml(p.nombreVisible)}</h2>
+      <span class="folio">#${p.id}</span>
+    </div>
+    <div class="datos">
+      <div class="dato"><span>Rama</span><strong>${pastillaRama(p.rama)}</strong></div>
+      <div class="dato"><span>Talla</span><strong>${escaparHtml(p.talla)}</strong></div>
+      <div class="dato categoria"><span>Categoría</span><strong>${escaparHtml(formatearCategoria(p.categoria))}</strong></div>
+      <div class="dato fecha"><span>Fecha de registro</span><strong>${formatearFecha(p.fecha)}</strong></div>
+      ${p.nota ? `<div class="dato ancho"><span>Comentario</span><strong>${escaparHtml(p.nota)}</strong></div>` : ''}
+    </div>
+    ${avisoDuplicado}`;
+
+  // Reiniciar animación al cambiar de persona
+  ficha.style.animation = 'none';
+  ficha.offsetHeight;
+  ficha.style.animation = '';
+
+  cuerpoTabla.querySelectorAll('tr').forEach((tr) => tr.classList.toggle('seleccionada', Number(tr.dataset.id) === p.id));
+};
+
+const seleccionar = (p) => {
+  if (!p) return;
+  entrada.value = p.nombreVisible;
+  cerrarSugerencias();
+  mostrarParticipante(p);
+};
+
+// ---------- Tabla ----------
+const pintarTabla = () => {
+  cuerpoTabla.innerHTML = participantes.map((p) => `
+    <tr data-id="${p.id}" class="${p.id === seleccionadoId ? 'seleccionada' : ''}">
+      <td class="num col-id">${p.id}</td>
+      <td class="col-nombre">${escaparHtml(p.nombreVisible)}</td>
+      <td class="col-rama">${pastillaRama(p.rama)}</td>
+      <td class="col-talla">${escaparHtml(p.talla)}</td>
+      <td class="col-categoria" data-talla="${escaparHtml(p.talla)}">${escaparHtml(formatearCategoria(p.categoria))}</td>
+      <td class="num col-fecha">${formatearFecha(p.fecha, false)}</td>
+    </tr>`).join('');
+};
+
+// ---------- Eventos ----------
+entrada.addEventListener('input', pintarSugerencias);
+entrada.addEventListener('focus', () => { if (entrada.value.trim()) pintarSugerencias(); });
+entrada.addEventListener('blur', () => setTimeout(cerrarSugerencias, 120));
+
+entrada.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); return moverActiva(1); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); return moverActiva(-1); }
+  if (e.key === 'Escape') return cerrarSugerencias();
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  seleccionar(resultadosActuales[indiceActivo]);
+});
+
+listaSugerencias.addEventListener('mousedown', (e) => {
+  const li = e.target.closest('li[data-indice]');
+  if (!li) return;
+  e.preventDefault();
+  seleccionar(resultadosActuales[Number(li.dataset.indice)]);
+});
+
+ficha.addEventListener('click', (e) => {
+  const boton = e.target.closest('button[data-id]');
+  if (!boton) return;
+  mostrarParticipante(participantes.find((p) => p.id === Number(boton.dataset.id)));
+});
+
+botonTabla.addEventListener('click', () => {
+  const abierta = botonTabla.getAttribute('aria-expanded') === 'true';
+  botonTabla.setAttribute('aria-expanded', String(!abierta));
+  botonTabla.querySelector('span').textContent = abierta ? 'Ver todos los registrados' : 'Ocultar tabla';
+  tablaEnvoltura.hidden = abierta;
+  if (abierta) return;
+  if (!cuerpoTabla.children.length) pintarTabla();
+});
+
+cuerpoTabla.addEventListener('click', (e) => {
+  const fila = e.target.closest('tr[data-id]');
+  if (!fila) return;
+  seleccionar(participantes.find((p) => p.id === Number(fila.dataset.id)));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ---------- Resumen ----------
+const totalFemenil = participantes.filter((p) => p.rama === 'FEMENIL').length;
+document.getElementById('resumen').textContent =
+  `${participantes.length} registros · ${participantes.length - totalFemenil} varonil · ${totalFemenil} femenil`;
+</script>
+</body>
+</html>
